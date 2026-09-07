@@ -19,7 +19,10 @@
         <p>Mere Tadabbur Notes</p>
       </div>
     </div>
-    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Dark mode on">☾</button>
+    <div class="top-actions">
+      <button class="auth-btn" id="authBtn" type="button">Login</button>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Dark mode on">☾</button>
+    </div>
   </header>
 
   <main>
@@ -40,6 +43,26 @@
     <p>Quran Tadabbur • Zati notes ke liye</p>
   </footer>
 
+  <div class="modal hidden" id="authModal" aria-hidden="true">
+    <div class="modal-card auth-card">
+      <button class="close" id="authClose" type="button" aria-label="Close">×</button>
+      <h3 id="authTitle">Login</h3>
+      <p class="modal-note" id="authNote">Log in to sync your Tadabbur notes across all your devices.</p>
+      <form id="authForm">
+        <label class="auth-label" for="authEmail">Email</label>
+        <input id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com">
+        <label class="auth-label" for="authPassword">Password</label>
+        <input id="authPassword" type="password" autocomplete="current-password" required minlength="6" placeholder="Minimum 6 characters">
+        <button class="auth-submit" id="authSubmit" type="submit">Login</button>
+      </form>
+      <button class="auth-switch" id="authSwitch" type="button">Don't have an account? Sign up</button>
+      <button class="auth-logout hidden" id="authLogout" type="button">Logout</button>
+      <p class="auth-status" id="authStatus" role="status"></p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
