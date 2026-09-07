@@ -47,43 +47,168 @@ const grid = document.getElementById('surahGrid');
 const search = document.getElementById('searchInput');
 const hero = document.querySelector('.hero');
 
+// Supabase cloud sync: only the publishable key is used in this browser app.
+// Secret/service-role keys must NEVER be placed in frontend code.
+const SUPABASE_CONFIG = window.SUPABASE_CONFIG || {};
+const supabaseClient = (window.supabase && SUPABASE_CONFIG.url && SUPABASE_CONFIG.publishableKey)
+  ? window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.publishableKey)
+  : null;
+let currentUser = null;
+let cloudSyncTimer = null;
+
 function loadData(){
-  // This app is intentionally limited to the 114 Qur'an Surahs.
-  // Start from the canonical 114-surah list and preserve only their notes.
   const defaults = structuredClone(defaultSurahs);
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (!Array.isArray(saved)) return defaults;
+    return Array.isArray(saved) ? mergeWithDefaults(saved) : defaults;
+  } catch { return defaults; }
+}
 
-    const savedByNumber = new Map(
-      saved
-        .filter(s => s && Number.isInteger(Number(s.number)) && Number(s.number) >= 1 && Number(s.number) <= 114)
-        .map(s => [Number(s.number), s])
-    );
+function save(){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+  catch(e){ console.warn('Unable to save notes', e); }
+  scheduleCloudSync();
+}
 
-    return defaults.map(def => {
-      const old = savedByNumber.get(def.number);
-      if (!old) return def;
-      const oldNotes = Array.isArray(old.notes) ? old.notes.map(n => String(n ?? '')) : [];
-      return {
-        ...def,
-        id: def.id,
-        ayahsData: Array.from({ length: def.ayahs }, (_, i) => {
-          const oldItem = Array.isArray(old.ayahsData) ? old.ayahsData[i] : null;
-          return {
-            arabic: oldItem?.arabic ? String(oldItem.arabic) : '',
-            translation: oldItem?.translation ? String(oldItem.translation) : '',
-            tadabbur: oldItem?.tadabbur ? String(oldItem.tadabbur) : (oldItem?.note ? String(oldItem.note) : (oldNotes[i] || ''))
-          };
-        })
-      };
-    });
-  } catch {
-    return defaults;
+function scheduleCloudSync(){
+  if(!currentUser || !supabaseClient) return;
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = setTimeout(syncToCloud, 450);
+}
+
+async function syncToCloud(){
+  if(!currentUser || !supabaseClient) return;
+  const payload = { User_id: currentUser.id, data, created_at: new Date().toISOString() };
+  try{
+    const { data: rows, error: readError } = await supabaseClient
+      .from('tadabbur_data').select('id').eq('User_id', currentUser.id).order('created_at', {ascending:false}).limit(1);
+    if(readError) throw readError;
+    if(rows && rows.length){
+      const { error } = await supabaseClient.from('tadabbur_data').update({data, created_at: payload.created_at}).eq('id', rows[0].id);
+      if(error) throw error;
+    } else {
+      const { error } = await supabaseClient.from('tadabbur_data').insert(payload);
+      if(error) throw error;
+    }
+    setAuthStatus('Cloud synced ✓');
+  }catch(e){
+    console.warn('Cloud sync failed:', e);
+    setAuthStatus('Cloud sync failed — local copy kept.');
   }
 }
 
-function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e){ console.warn('Unable to save notes', e); } }
+async function loadCloudData(user){
+  if(!supabaseClient) return false;
+  try{
+    const { data: rows, error } = await supabaseClient
+      .from('tadabbur_data').select('id,data,created_at').eq('User_id', user.id).order('created_at', {ascending:false}).limit(1);
+    if(error) throw error;
+    if(rows && rows[0] && rows[0].data && Array.isArray(rows[0].data)){
+      data = mergeWithDefaults(rows[0].data);
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e){}
+      return true;
+    }
+  }catch(e){
+    console.warn('Cloud load failed:', e);
+    setAuthStatus('Cloud load failed — local copy used.');
+  }
+  return false;
+}
+
+function mergeWithDefaults(saved){
+  const savedByNumber = new Map(
+    saved.filter(s => s && Number.isInteger(Number(s.number)) && Number(s.number)>=1 && Number(s.number)<=114)
+      .map(s => [Number(s.number), s])
+  );
+  return defaultSurahs.map(def => {
+    const old=savedByNumber.get(def.number); if(!old) return def;
+    const oldNotes=Array.isArray(old.notes)?old.notes.map(n=>String(n??'')):[];
+    return {...def, id:def.id, ayahsData:Array.from({length:def.ayahs},(_,i)=>{
+      const x=Array.isArray(old.ayahsData)?old.ayahsData[i]:null;
+      return {arabic:x?.arabic?String(x.arabic):'',translation:x?.translation?String(x.translation):'',tadabbur:x?.tadabbur?String(x.tadabbur):(x?.note?String(x.note):(oldNotes[i]||''))};
+    })};
+  });
+}
+
+function setAuthStatus(message){
+  const el=document.getElementById('authStatus'); if(el) el.textContent=message||'';
+}
+
+function updateAuthUI(){
+  const btn=document.getElementById('authBtn');
+  if(btn) btn.textContent=currentUser ? (currentUser.email ? currentUser.email.split('@')[0] : 'Account') : 'Login';
+}
+
+async function initAuth(){
+  updateAuthUI();
+  if(!supabaseClient){
+    setAuthStatus('Supabase configuration is not available. Local mode is active.');
+    return;
+  }
+  const {data: sessionData}=await supabaseClient.auth.getSession();
+  if(sessionData?.session){
+    currentUser=sessionData.session.user;
+    const hadCloud=await loadCloudData(currentUser);
+    if(!hadCloud) await syncToCloud();
+    renderHome();
+  }
+  updateAuthUI();
+  supabaseClient.auth.onAuthStateChange(async (_event, session)=>{
+    currentUser=session?.user||null;
+    updateAuthUI();
+    if(currentUser){
+      const hadCloud=await loadCloudData(currentUser);
+      if(!hadCloud) await syncToCloud();
+      renderHome();
+    }else{
+      data=loadData(); renderHome();
+    }
+  });
+}
+
+async function handleAuthSubmit(e){
+  e.preventDefault();
+  if(!supabaseClient){setAuthStatus('Supabase configuration is missing.');return;}
+  const email=document.getElementById('authEmail').value.trim();
+  const password=document.getElementById('authPassword').value;
+  const signup=document.getElementById('authTitle').textContent==='Sign up';
+  setAuthStatus('Please wait...');
+  const result=signup
+    ? await supabaseClient.auth.signUp({email,password})
+    : await supabaseClient.auth.signInWithPassword({email,password});
+  if(result.error){setAuthStatus(result.error.message);return;}
+  if(signup && !result.data.session){setAuthStatus('Account created. Email verification may be required.');return;}
+  closeAuthModal();
+}
+
+function openAuthModal(){
+  const m=document.getElementById('authModal'); if(!m)return;
+  m.classList.remove('hidden'); m.setAttribute('aria-hidden','false');
+  document.getElementById('authEmail')?.focus();
+}
+function closeAuthModal(){
+  const m=document.getElementById('authModal'); if(!m)return;
+  m.classList.add('hidden'); m.setAttribute('aria-hidden','true');
+  setAuthStatus('');
+}
+
+function setupAuthUI(){
+  document.getElementById('authBtn')?.addEventListener('click',()=>{
+    if(currentUser){ openAuthModal(); document.getElementById('authLogout')?.classList.remove('hidden'); document.getElementById('authForm')?.classList.add('hidden'); document.getElementById('authSwitch')?.classList.add('hidden'); document.getElementById('authTitle').textContent='Account'; document.getElementById('authNote').textContent='Cloud sync is active.'; }
+    else { openAuthModal(); }
+  });
+  document.getElementById('authClose')?.addEventListener('click',closeAuthModal);
+  document.getElementById('authForm')?.addEventListener('submit',handleAuthSubmit);
+  document.getElementById('authSwitch')?.addEventListener('click',()=>{
+    const signup=document.getElementById('authTitle').textContent!=='Sign up';
+    document.getElementById('authTitle').textContent=signup?'Sign up':'Login';
+    document.getElementById('authSubmit').textContent=signup?'Create account':'Login';
+    document.getElementById('authSwitch').textContent=signup?'Already have an account? Login':"Don't have an account? Sign up";
+    document.getElementById('authNote').textContent=signup?'Create an account to sync notes across devices.':"Log in to sync your Tadabbur notes across all your devices.";
+    setAuthStatus('');
+  });
+  document.getElementById('authLogout')?.addEventListener('click',async()=>{if(supabaseClient) await supabaseClient.auth.signOut();closeAuthModal();});
+}
 function esc(v){ return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
 function renderHome(){
   hero.style.display='';
@@ -163,4 +288,6 @@ function deleteSurah(id){if(!confirm('Ei Surah-er shob tadabbur shoho mita felbe
 grid.addEventListener('click',e=>{const card=e.target.closest('.surah-card');if(card)openSurah(card.dataset.id);});
 grid.addEventListener('keydown',e=>{const card=e.target.closest('.surah-card');if(card&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openSurah(card.dataset.id);}});
 search.addEventListener('input',renderHome);
+setupAuthUI();
 renderHome();
+initAuth();
