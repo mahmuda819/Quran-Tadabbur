@@ -201,10 +201,15 @@ async function requestPasswordReset(e){
   const email=document.getElementById('resetEmail').value.trim();
   if(!email){setAuthStatus('Please enter your email.');return;}
   setAuthStatus('Sending recovery link...');
-  const redirectTo=new URL(window.location.href);
-  redirectTo.hash='';
-  redirectTo.search='';
-  const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:redirectTo.toString()});
+  const redirectTo = new URL('reset-password.html', window.location.href);
+
+redirectTo.hash = '';
+redirectTo.search = '';
+
+const {error} = await supabaseClient.auth.resetPasswordForEmail(
+  email,
+  {redirectTo: redirectTo.toString()}
+);
   if(error){setAuthStatus(error.message);return;}
   setAuthStatus('Recovery link sent. Please check your email.','success');
 }
