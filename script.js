@@ -194,25 +194,61 @@ function updateAuthUI(){
   const btn=document.getElementById('authBtn');
   if(btn) btn.textContent=currentUser ? (currentUser.email ? currentUser.email.split('@')[0] : 'Account') : 'Login';
 }
-
 async function requestPasswordReset(e){
   e.preventDefault();
-  if(!supabaseClient){setAuthStatus('Supabase configuration is missing.');return;}
-  const email=document.getElementById('resetEmail').value.trim();
-  if(!email){setAuthStatus('Please enter your email.');return;}
+
+  if(!supabaseClient){
+    setAuthStatus('Supabase configuration is missing.');
+    return;
+  }
+
+  const email = document.getElementById('resetEmail').value.trim();
+  const resetButton = document.querySelector('#resetRequestForm button[type="submit"]');
+
+  if(!email){
+    setAuthStatus('Please enter your email.');
+    return;
+  }
+
+  if(resetButton?.disabled) return;
+
+  if(resetButton){
+    resetButton.disabled = true;
+    resetButton.textContent = 'Sending...';
+  }
+
   setAuthStatus('Sending recovery link...');
+
   const redirectTo = new URL('reset-password.html', window.location.href);
+  redirectTo.hash = '';
+  redirectTo.search = '';
 
-redirectTo.hash = '';
-redirectTo.search = '';
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(
+    email,
+    { redirectTo: redirectTo.toString() }
+  );
 
-const {error} = await supabaseClient.auth.resetPasswordForEmail(
-  email,
-  {redirectTo: redirectTo.toString()}
-);
-  if(error){setAuthStatus(error.message);return;}
-  setAuthStatus('Recovery link sent. Please check your email.','success');
+  if(error){
+    setAuthStatus(error.message);
+
+    if(resetButton){
+      resetButton.disabled = false;
+      resetButton.textContent = 'Send recovery link';
+    }
+
+    return;
+  }
+
+  setAuthStatus(
+    'Recovery link sent. Please check your email.',
+    'success'
+  );
+
+  if(resetButton){
+    resetButton.textContent = 'Email sent ✓';
+  }
 }
+
 
 async function updatePassword(e){
   e.preventDefault();
