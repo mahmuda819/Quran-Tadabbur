@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quran Tadabbur</title>
+  <meta name="description" content="Zati Quran Tadabbur Notes">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">ق</div>
+      <div>
+        <h1>Quran Tadabbur</h1>
+        <p>Mere Tadabbur Notes</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="auth-btn" id="authBtn" type="button">Login</button>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Dark mode on">☾</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
+      <h2>Quran ke saath gehri soch ka safar</h2>
+      <p>Har din ek ayat. Ek soch. Ek tadabbur.</p>
+      <div class="search-wrap">
+        <span>⌕</span>
+        <input id="searchInput" type="search" placeholder="Surah ka naam dhoondhein..." aria-label="Surah ka naam dhoondhein">
+      </div>
+    </section>
+
+    <section class="surah-grid" id="surahGrid"></section>
+  </main>
+
+  <footer>
+    <p>Quran Tadabbur • Zati notes ke liye</p>
+  </footer>
+
+  <div class="modal hidden" id="authModal" aria-hidden="true">
+    <div class="modal-card auth-card">
+      <button class="close" id="authClose" type="button" aria-label="Close">×</button>
+      <h3 id="authTitle">Login</h3>
+      <p class="modal-note" id="authNote">Log in to sync your Tadabbur notes across all your devices.</p>
+      <form id="authForm">
+        <label class="auth-label" for="authEmail">Email</label>
+        <div class="auth-input-wrap">
+          <input id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com">
+        </div>
+
+        <label class="auth-label" for="authPassword">Password</label>
+        <div class="auth-input-wrap">
+          <input id="authPassword" type="password" autocomplete="current-password" required minlength="6" placeholder="Minimum 6 characters">
+          <button class="password-toggle" id="passwordToggle" type="button" aria-label="Show password" title="Show password">
+            <svg class="eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+          </button>
+        </div>
+        <button class="forgot-password" id="forgotPassword" type="button">Forgot password?</button>
+        <button class="auth-submit" id="authSubmit" type="submit">Login</button>
+      </form>
+
+      <form id="resetRequestForm" class="hidden">
+        <label class="auth-label" for="resetEmail">Email</label>
+        <div class="auth-input-wrap">
+          <input id="resetEmail" type="email" autocomplete="email" required placeholder="you@example.com">
+        </div>
+        <button class="auth-submit" id="resetRequestSubmit" type="submit">Send recovery link</button>
+        <button class="auth-switch auth-back-login" id="backToLogin" type="button">← Back to login</button>
+      </form>
+
+      <form id="resetPasswordForm" class="hidden">
+        <label class="auth-label" for="newPassword">New password</label>
+        <div class="auth-input-wrap">
+          <input id="newPassword" type="password" autocomplete="new-password" required minlength="6" placeholder="Minimum 6 characters">
+          <button class="password-toggle" data-toggle-target="newPassword" type="button" aria-label="Show password" title="Show password">
+            <svg class="eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+          </button>
+        </div>
+        <label class="auth-label" for="confirmPassword">Confirm new password</label>
+        <div class="auth-input-wrap">
+          <input id="confirmPassword" type="password" autocomplete="new-password" required minlength="6" placeholder="Enter password again">
+          <button class="password-toggle" data-toggle-target="confirmPassword" type="button" aria-label="Show password" title="Show password">
+            <svg class="eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+          </button>
+        </div>
+        <button class="auth-submit" type="submit">Update password</button>
+      </form>
+
+      <button class="auth-switch" id="authSwitch" type="button">Don't have an account? Sign up</button>
+      <button class="auth-logout hidden" id="authLogout" type="button">Logout</button>
+      <p class="auth-status" id="authStatus" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
