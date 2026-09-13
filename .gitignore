@@ -1,0 +1,11 @@
+# Local Supabase configuration
+supabase-config.js
+
+# Local/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
