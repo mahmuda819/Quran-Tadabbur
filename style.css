@@ -880,40 +880,85 @@ html.dark-mode .tadabbur-award-inner,body.dark-mode .tadabbur-award-inner{box-sh
   .tadabbur-award-inner strong{font-size:14px;}
 }
 
-/* Dark Mode - Auth Modal Text Fix */
-html.dark-mode .auth-modal,
-body.dark-mode .auth-modal {
+/* Dark Mode — Login / Signup readability fix */
+html.dark-mode .auth-card,
+body.dark-mode .auth-card {
   color: var(--ink);
 }
 
-html.dark-mode .auth-modal label,
-body.dark-mode .auth-modal label {
+html.dark-mode .auth-card h3,
+body.dark-mode .auth-card h3 {
   color: var(--ink);
 }
 
-html.dark-mode .auth-modal input,
-html.dark-mode .auth-modal textarea,
-body.dark-mode .auth-modal input,
-body.dark-mode .auth-modal textarea {
+html.dark-mode .auth-card .modal-note,
+body.dark-mode .auth-card .modal-note {
+  color: var(--muted);
+}
+
+html.dark-mode .auth-card .auth-label,
+body.dark-mode .auth-card .auth-label {
   color: var(--ink);
-  background: var(--surface);
+}
+
+html.dark-mode .auth-card .auth-input-wrap input,
+body.dark-mode .auth-card .auth-input-wrap input {
+  background: #151916;
+  color: var(--ink);
   border-color: var(--line);
 }
 
-html.dark-mode .auth-modal input::placeholder,
-html.dark-mode .auth-modal textarea::placeholder,
-body.dark-mode .auth-modal input::placeholder,
-body.dark-mode .auth-modal textarea::placeholder {
+html.dark-mode .auth-card .auth-input-wrap input::placeholder,
+body.dark-mode .auth-card .auth-input-wrap input::placeholder {
   color: var(--muted);
   opacity: 1;
 }
 
-html.dark-mode .auth-modal .auth-link,
-body.dark-mode .auth-modal .auth-link {
+html.dark-mode .auth-card .password-toggle,
+body.dark-mode .auth-card .password-toggle {
+  color: var(--muted);
+}
+
+html.dark-mode .auth-card .forgot-password,
+body.dark-mode .auth-card .forgot-password,
+html.dark-mode .auth-card .auth-switch,
+body.dark-mode .auth-card .auth-switch,
+html.dark-mode .auth-card .auth-logout,
+body.dark-mode .auth-card .auth-logout {
   color: var(--accent);
 }
 
-html.dark-mode .auth-modal .auth-status,
-body.dark-mode .auth-modal .auth-status {
+html.dark-mode .auth-card .auth-status,
+body.dark-mode .auth-card .auth-status {
+  color: var(--muted);
+}
+
+html.dark-mode .auth-card .lifetime-access-box,
+body.dark-mode .auth-card .lifetime-access-box {
   color: var(--ink);
+}
+
+html.dark-mode .auth-card .lifetime-access-box strong,
+body.dark-mode .auth-card .lifetime-access-box strong {
+  color: var(--accent);
+}
+
+html.dark-mode .auth-card .signup-feedback textarea,
+body.dark-mode .auth-card .signup-feedback textarea {
+  background: #151916;
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+html.dark-mode .auth-card .signup-feedback textarea::placeholder,
+body.dark-mode .auth-card .signup-feedback textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+html.dark-mode .auth-card .auth-dashboard,
+body.dark-mode .auth-card .auth-dashboard {
+  background: var(--surface);
+  color: var(--accent);
+  border-color: var(--line);
 }
