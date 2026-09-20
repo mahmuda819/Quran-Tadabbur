@@ -879,3 +879,41 @@ html.dark-mode .tadabbur-award-inner,body.dark-mode .tadabbur-award-inner{box-sh
   .tadabbur-award-inner{padding:11px 13px;gap:7px;font-size:11px;}
   .tadabbur-award-inner strong{font-size:14px;}
 }
+
+/* Dark Mode - Auth Modal Text Fix */
+html.dark-mode .auth-modal,
+body.dark-mode .auth-modal {
+  color: var(--ink);
+}
+
+html.dark-mode .auth-modal label,
+body.dark-mode .auth-modal label {
+  color: var(--ink);
+}
+
+html.dark-mode .auth-modal input,
+html.dark-mode .auth-modal textarea,
+body.dark-mode .auth-modal input,
+body.dark-mode .auth-modal textarea {
+  color: var(--ink);
+  background: var(--surface);
+  border-color: var(--line);
+}
+
+html.dark-mode .auth-modal input::placeholder,
+html.dark-mode .auth-modal textarea::placeholder,
+body.dark-mode .auth-modal input::placeholder,
+body.dark-mode .auth-modal textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+html.dark-mode .auth-modal .auth-link,
+body.dark-mode .auth-modal .auth-link {
+  color: var(--accent);
+}
+
+html.dark-mode .auth-modal .auth-status,
+body.dark-mode .auth-modal .auth-status {
+  color: var(--ink);
+}
