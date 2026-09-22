@@ -136,6 +136,36 @@ function getTadabburDisplayName(user=currentUser){
   return (email.split('@')[0]||'Quran Tadabbur User').slice(0,80);
 }
 let tadabburAwardTimer=null;
+let tadabburAwardStyleInjected=false;
+function setupTadabburAwardBanner(){
+  const box=document.getElementById('tadabburAward');
+  if(!box) return null;
+  if(!tadabburAwardStyleInjected){
+    const style=document.createElement('style');
+    style.id='tadabburAwardBannerStyle';
+    style.textContent=`
+      #tadabburAward{display:none;position:relative;width:100%;max-width:100%;overflow:hidden;height:34px;margin:0 auto;}
+      #tadabburAward.is-visible{display:block;}
+      #tadabburAward .tadabbur-award-inner{display:flex;align-items:center;justify-content:flex-start;gap:8px;width:max-content;min-width:max-content;height:34px;white-space:nowrap;animation:tadabburAwardMarquee 12s linear infinite;will-change:transform;}
+      #tadabburAward .tadabbur-award-kicker{font-size:.78rem;opacity:.78;}
+      #tadabburAward strong{font-size:.9rem;font-weight:700;}
+      #tadabburAward .tadabbur-award-inner>span:last-child{font-size:.74rem;opacity:.72;}
+      @keyframes tadabburAwardMarquee{0%{transform:translateX(100vw)}100%{transform:translateX(-100%)} }
+      @media (prefers-reduced-motion:reduce){#tadabburAward .tadabbur-award-inner{animation:none;transform:none;justify-content:center;width:100%;}}
+      @media (max-width:600px){#tadabburAward{height:30px}.tadabbur-award-inner{height:30px!important}.tadabbur-award-kicker{font-size:.7rem!important}.tadabbur-award-inner strong{font-size:.82rem!important}}
+    `;
+    document.head.appendChild(style);
+    tadabburAwardStyleInjected=true;
+  }
+  const nav=document.querySelector('nav, header nav, .navbar, .site-header, header');
+  const bismillah=document.querySelector('.bismillah-display');
+  if(nav && bismillah && bismillah.parentNode){
+    bismillah.parentNode.insertBefore(box,bismillah);
+  }else if(nav && nav.parentNode){
+    nav.parentNode.insertBefore(box,nav.nextSibling);
+  }
+  return box;
+}
 async function recordTadabburForMonth(surahId,index){
   if(!currentUser || !supabaseClient) return;
   const ayahKey=`${surahId}:${index}`;
@@ -145,8 +175,10 @@ async function recordTadabburForMonth(surahId,index){
   }catch(e){ console.warn('Tadabbur award tracking failed:',e); }
 }
 async function loadTadabburAward(){
-  const box=document.getElementById('tadabburAward');
+  const box=setupTadabburAwardBanner();
   if(!box || !supabaseClient) return;
+  const day=new Date().getDate();
+  if(day>3){ box.innerHTML=''; box.classList.remove('is-visible'); return; }
   try{
     const {data:rows,error}=await supabaseClient.rpc('get_tadabbur_of_month');
     if(error) throw error;
