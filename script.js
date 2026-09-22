@@ -1073,7 +1073,10 @@ grid.addEventListener('keydown',e=>{
   const card=e.target.closest('.surah-card');
   if(card&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openSurah(card.dataset.id);}
 });
-document.getElementById('homeBtn')?.addEventListener('click',renderHome);
+document.getElementById('homeBtn')?.addEventListener('click',()=>{
+  renderHome();
+  window.scrollTo({top:0,left:0,behavior:'instant'});
+});
 const backToTop=document.getElementById('backToTop');
 if(backToTop){
   const updateBackToTop=()=>backToTop.classList.toggle('is-visible',window.scrollY>320);
@@ -1081,10 +1084,22 @@ if(backToTop){
   backToTop.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
   updateBackToTop();
 }
-document.getElementById('todayBtn')?.addEventListener('click',renderLastTadabbur);
-document.getElementById('favoritesBtn')?.addEventListener('click',renderFavorites);
-document.getElementById('amalBtn')?.addEventListener('click',renderMyAmal);
-document.getElementById('notesBtn')?.addEventListener('click',renderTadabburNotes);
+document.getElementById('todayBtn')?.addEventListener('click',()=>{
+  renderLastTadabbur();
+  window.scrollTo({top:0,left:0,behavior:'instant'});
+});
+document.getElementById('favoritesBtn')?.addEventListener('click',()=>{
+  renderFavorites();
+  window.scrollTo({top:0,left:0,behavior:'instant'});
+});
+document.getElementById('amalBtn')?.addEventListener('click',()=>{
+  renderMyAmal();
+  window.scrollTo({top:0,left:0,behavior:'instant'});
+});
+document.getElementById('notesBtn')?.addEventListener('click',()=>{
+  renderTadabburNotes();
+  window.scrollTo({top:0,left:0,behavior:'instant'});
+});
 search.addEventListener('input',renderGlobalSearch);
 const languageSelect=document.getElementById('languageSelect');
 if(languageSelect){
